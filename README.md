@@ -45,5 +45,7 @@ Django https://www.djangoproject.com/
 PostgreSQL https://www.postgresql.org/
 Docker https://www.docker.com/
 
+https://github.com/ushenina/yamdb_final/actions/workflows/yamdb_workflow.yml/badge.svg
+
 Автор проекта
 Юлия Ушенина - Python Developer
