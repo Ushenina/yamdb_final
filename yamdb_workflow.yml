@@ -59,7 +59,7 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         stack_file_name: docker-compose.yaml
           script: |
-            sudo docker pull ${{ secrets.USER }}/yamdb
+            sudo docker pull ${{ secrets.SSH_USER }}/yamdb
             sudo docker-compose stop
             sudo docker-compose rm web
             touch .env
