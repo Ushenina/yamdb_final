@@ -1,40 +1,86 @@
-from rest_framework import permissions
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 
-class AdminOnly(permissions.BasePermission):
+class AuthorPermisssion(BasePermission):
+    """
+        С этим разрешением:
+        - анонимы могут читать
+        - пользователи создавать
+        - авторы редактировать и удалять
+    """
     def has_permission(self, request, view):
-        if not request.user.is_anonymous:
-            return request.user.is_admin
+        return bool(
+            request.method in SAFE_METHODS
+            or request.user.is_authenticated
+        )
 
     def has_object_permission(self, request, view, obj):
-        if not request.user.is_anonymous:
-            return request.user.is_admin
+        return bool(
+            request.method in SAFE_METHODS
+            or request.user and obj.author
+            and request.user.is_authenticated
+            and request.user == obj.author
+        )
 
 
-class IsAdminUserOrReadOnly(permissions.BasePermission):
+class AdminPermission(BasePermission):
+    """
+        С этим разрешением:
+        - только админы могут читать, создавать, редактировать и удалять
+    """
     def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        if request.user.is_authenticated:
-            return request.user.is_admin
-        return False
-
-
-class AdminModeratorAuthorPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        if request.user.is_anonymous:
-            return False
-        return request.user.is_authenticated
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.is_admin
+        )
 
     def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        if request.user.is_anonymous:
-            return False
-        return (
-            obj.author == request.user
-            or request.user.is_admin
-            or request.user.is_moderator
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.is_admin
+        )
+
+
+class AdminOrReadOnly(BasePermission):
+    """
+        С этим разрешением:
+        - пользователи могут читать
+        - админы могут создавать, редактировать и удалять
+    """
+    def has_permission(self, request, view):
+        return bool(
+            request.method in SAFE_METHODS
+            or request.user
+            and request.user.is_authenticated
+            and request.user.is_admin
+        )
+
+    def has_object_permission(self, request, view, obj):
+        return bool(
+            request.method in SAFE_METHODS
+            or request.user
+            and request.user.is_authenticated
+            and request.user.is_admin
+        )
+
+
+class ModeratorPermission(BasePermission):
+    """
+        С этим разрешением:
+        - только модераторы могут читать, создавать, редактировать и удалять
+    """
+    def has_permission(self, request, view):
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.is_moderator
+        )
+
+    def has_object_permission(self, request, view, obj):
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.is_moderator
         )

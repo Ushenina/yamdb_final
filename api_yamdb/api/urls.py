@@ -1,42 +1,55 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .views import (
-    CategoryViewSet,
-    CommentViewset,
-    GenreViewSet,
-    ReviewViewset,
-    TitleViewSet,
-    UsersViewSet,
-    signup,
-    token
-)
-
-app_name = 'api'
+from .views import (CategoryViewSet, CommentViewSet,  # UserMeView,
+                    GenreViewSet, ReviewViewSet, TitleViewSet, UserViewSet,
+                    get_confirmation, get_token)
 
 router = DefaultRouter()
 
-router.register('categories', CategoryViewSet)
-router.register('genres', GenreViewSet)
-router.register('titles', TitleViewSet)
-router.register('users', UsersViewSet, basename='users')
-router.register(
-    r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
-    CommentViewset,
-    basename='comments'
-)
+router.register('users', UserViewSet, basename='User')
+
+# (GET, POST) /titles/{title_id}/reviews/
+# (GET, PATCH, DELETE) /titles/{title_id}/reviews/{review_id}/
 router.register(
     r'titles/(?P<title_id>\d+)/reviews',
-    ReviewViewset,
+    ReviewViewSet,
     basename='reviews'
 )
 
-v1_auth_patterns = [
-    path('token/', token, name='get_token'),
-    path('signup/', signup, name='signup'),
-]
+# (GET, POST) /titles/{title_id}/reviews/{review_id}/comments/
+# (GET, PATCH, DELETE)
+#               /titles/{title_id}/reviews/{review_id}/comments/{comment_id}/
+router.register(
+    r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+    CommentViewSet,
+    basename='comments'
+)
+
+router.register(r'^categories', CategoryViewSet)
+router.register(r'^genres', GenreViewSet)
+router.register(r'^titles', TitleViewSet)
 
 urlpatterns = [
     path('v1/', include(router.urls)),
-    path('v1/auth/', include(v1_auth_patterns)),
+]
+
+urlpatterns += [
+    path('v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path(
+        'v1/auth/token/',
+        get_token,
+        name='get_token'
+    ),
+    path(
+        'v1/auth/email/',
+        get_confirmation,
+        name='email_confirmation'
+    ),
+    path(
+        'v1/auth/admin_token/',
+        TokenObtainPairView.as_view(),
+        name='admin_token'
+    ),
 ]
